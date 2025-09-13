@@ -1,7 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
-import { authRoutes } from "./features/auth/routes/authRoutes";
-import { authMiddleware } from "./features/auth/routes/authMiddleware";
+import { authRoutes } from "./features/auth/authRoutes";
+import { authMiddleware } from "./shared/middleware/authMiddleware";
 
 const app = express();
 app.use(bodyParser.json());

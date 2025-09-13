@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { auth } from "../infrastructure/auth";
+import { auth } from "../../shared/infrastructure/auth";
 
 export const authRoutes = () => {
   const router = Router();
