@@ -1,7 +1,9 @@
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
-import dotenv from "dotenv";
+import * as dotenv from "dotenv";
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./shared/infrastructure/auth/auth";
 
 // Load environment variables
 dotenv.config();
@@ -11,6 +13,11 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(morgan("combined"));
+
+// Mount Better Auth handler BEFORE express.json()
+app.use("/api/auth", toNodeHandler(auth));
+
+// Then add express.json() for other routes
 app.use(express.json());
 
 // Health check endpoint
@@ -29,25 +36,22 @@ app.get("/", (req, res) => {
     version: "1.0.0",
     endpoints: {
       health: "GET /health",
-      register: "POST /api/v1/auth/register",
-      login: "POST /api/v1/auth/login",
-      users: "GET /api/v1/users",
-      roles: "GET /api/v1/roles",
+      auth: "POST|GET /api/auth/*",
+      register: "POST /api/auth/sign-up/email",
+      login: "POST /api/auth/sign-in/email",
+      session: "GET /api/auth/session",
     },
     usage: {
-      note: "All endpoints require X-API-Key header",
+      note: "All endpoints require X-API-Key header (except Better Auth endpoints)",
       example: "curl -H 'X-API-Key: your-api-key' http://localhost:3002/health",
     },
   });
 });
 
-// TODO: Add routes here later
-// app.use("/api/v1/auth", authRoutes);
-// app.use("/api/v1/users", userRoutes);
-// app.use("/api/v1/roles", roleRoutes);
+
 
 // 404 handler
-app.use("*", (req, res) => {
+app.use("/{*any}", (req, res) => {
   res.status(404).json({
     error: "Endpoint not found",
     path: req.originalUrl,

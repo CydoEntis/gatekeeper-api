@@ -69,8 +69,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
 
-  // Add relationship to tenants they can access
-  tenantAccess TenantAccess[]
+  tenants Tenant[]
 
   @@map("user")
 }
@@ -79,58 +78,12 @@ model Tenant {
   id        String   @id @default(cuid())
   name      String
   email     String   @unique
-  apiKey    String   @unique
+  apiKey    String?  @unique
+  ownerId   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  access TenantAccess[]
-
-  users TenantUser[]
-  roles TenantRole[]
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
   @@map("tenants")
-}
-
-model TenantAccess {
-  id       String @id @default(cuid())
-  userId   String
-  tenantId String
-  role     String
-
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, tenantId])
-  @@map("tenant_access")
-}
-
-model TenantRole {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  tenantId    String
-  createdAt   DateTime @default(now())
-
-  tenant Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  users  TenantUser[]
-
-  @@unique([name, tenantId])
-  @@map("tenant_roles")
-}
-
-model TenantUser {
-  id        String   @id @default(cuid())
-  email     String
-  name      String?
-  password  String?
-  tenantId  String
-  roleId    String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  tenant Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  role   TenantRole? @relation(fields: [roleId], references: [id], onDelete: SetNull)
-
-  @@unique([email, tenantId])
-  @@map("tenant_users")
 }

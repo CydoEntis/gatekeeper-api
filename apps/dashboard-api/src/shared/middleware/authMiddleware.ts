@@ -1,22 +1,37 @@
+// apps/dashboard-api/src/shared/middleware/authMiddleware.ts
 import { Request, Response, NextFunction } from "express";
 import { auth } from "../infrastructure/auth";
 
-export const authMiddleware = () => {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) return res.status(401).json({ error: "No token provided" });
+interface AuthenticatedRequest extends Request {
+  user?: {
+    id: string;
+    email: string;
+    name?: string;
+  };
+}
 
+export const authMiddleware = () => {
+  return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     try {
       const session = await auth.api.getSession({
-        headers: new Headers({
-          Authorization: `Bearer ${token}`,
-        }),
+        headers: new Headers(req.headers as any),
         asResponse: false,
       });
-      if (!session?.user) return res.status(401).json({ error: "Invalid token" });
+
+      if (!session?.user) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      req.user = {
+        id: session.user.id,
+        email: session.user.email,
+        name: session.user.name || undefined,
+      };
+
       next();
     } catch (err) {
-      return res.status(401).json({ error: "Invalid token" });
+      console.error("Auth middleware error:", err);
+      return res.status(401).json({ error: "Invalid session" });
     }
   };
 };
