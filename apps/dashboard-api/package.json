@@ -1,11 +1,14 @@
 {
-  "name": "gatekeeper-api",
+  "name": "dashboard-api",
   "version": "1.0.0",
   "type": "commonjs",
   "scripts": {
     "dev": "ts-node-dev --respawn src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate"
   },
   "keywords": [],
   "author": "",
